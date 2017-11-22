@@ -1,0 +1,7 @@
+#!/bin/bash
+
+localtmpdir="/tmp"
+localdatadir="$localtmpdir/amu-backup"
+devtmpdir="/sdcard"
+devdatadir="$devtmpdir/amu-backup"
+
