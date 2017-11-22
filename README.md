@@ -1,6 +1,6 @@
 # cluk/android-multiuser-backup
 
-** a set of shell scripts to backup and restore apps and data for multiuser android devices **
+**a set of shell scripts to backup and restore apps and data for multiuser android devices**
 
 ## Motivation
 I spend hours to find a way to copy all data from all useraccounts from my old tablet to the new one.
@@ -24,17 +24,19 @@ The shell scripts in this repo require
 
 ## Backup
 After cloning the repo you could simply run:
-
+```bash
   adb-backup.sh <uid> <pkg1> [<pkg2> <pkg3> ..]
-
+```
 eg:
-
+```bash
   adb-backup.sh 12 org.mozilla.firefox com.foo.bar
-
+```
 ## Restore
-
+```bash
   adb-restore.sh <uid> <pkg1> [<pkg2> <pkg3> ..]
+```
 
 eg:
-
+```bash
   adb-restore.sh 12 org.mozilla.firefox com.foo.bar
+```
