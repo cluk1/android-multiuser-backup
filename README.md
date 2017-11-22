@@ -1,4 +1,4 @@
-#cluk/android-multiuser-backup
+# cluk/android-multiuser-backup
 
 ** a set of shell scripts to backup and restore apps and data for multiuser android devices **
 
@@ -24,11 +24,17 @@ The shell scripts in this repo require
 
 ## Backup
 After cloning the repo you could simply run:
+
   adb-backup.sh <uid> <pkg1> [<pkg2> <pkg3> ..]
+
 eg:
+
   adb-backup.sh 12 org.mozilla.firefox com.foo.bar
 
 ## Restore
+
   adb-restore.sh <uid> <pkg1> [<pkg2> <pkg3> ..]
+
 eg:
+
   adb-restore.sh 12 org.mozilla.firefox com.foo.bar
