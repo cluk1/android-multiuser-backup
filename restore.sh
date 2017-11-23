@@ -19,7 +19,7 @@ pkgs="$*"
 
 # Backup all installed packages?
 if [ "$pkg" = "all" ]; then
-  pkgfiles="$(cd $devdatadir; ls *.apk)"
+  pkgfiles="$(cd $devdatadir/apks; ls *.apk)"
   for file in $pkgfiles; do
     pkgs="$pkgs ${file%\.apk}"
   done
@@ -29,10 +29,10 @@ echo "Restoring backup for uid $uid.."
 for pkg in $pkgs; do
   [ -z "$pkg" ] && ( echo "Missing pkg"; exit 1)
   echo "  Restoring pkg $pkg.."
-  [ -f "$base/$pkg.apk" ] && (
+  [ -f "$base/apks/$pkg.apk" ] && (
     echo "    Installing pkg.."
     if [ -z "$(pm list package $pkg)" ]; then
-      pm install $base/$pkg.apk
+      pm install $base/apks/$pkg.apk
       for user in $(cd /data/user; ls | grep '^[0-9]*$' | grep -v $uid); do
         pm disable --user $user $pkg
       done
@@ -41,7 +41,7 @@ for pkg in $pkgs; do
     fi
     echo "    done."
   )
-  [ -f "$base/$uid-$pkg-user.tar" ] && (
+  [ -f "$base/data/$uid/$pkg-user.tar" ] && (
     echo "    Getting uid/gid and secontext.."
     secontext=$(ls -dZ user/$uid/$pkg | cut -f1 -d' ')
     user=$(ls -dl user/$uid/$pkg | cut -f3 -d' ')
@@ -49,7 +49,7 @@ for pkg in $pkgs; do
     echo "    done."
     echo "    Restoring userdata.."
     rm -rf user/$uid/$pkg
-    tar x -C user/$uid -f $base/$uid-$pkg-user.tar $pkg
+    tar x -C user/$uid -f $base/data/$uid/$pkg-user.tar $pkg
     echo "    done."
     echo "    Restoring ownership.."
     chown -R $user:$group user/$uid/$pkg
@@ -58,10 +58,10 @@ for pkg in $pkgs; do
     find user/$uid/$pkg -exec chcon $secontext {} \;
     echo "    done."
   )
-  [ -f "$base/$uid-$pkg-media.tar" ] && (
+  [ -f "$base/data/$uid/$pkg-media.tar" ] && (
     echo "    Restoring media.."
     rm -rf media/$uid/Android/data/$pkg
-    tar x -C media/$uid/Android/data -f $base/$uid-$pkg-media.tar $pkg
+    tar x -C media/$uid/Android/data -f $base/data/$uid/$pkg-media.tar $pkg
     echo "    done."
   )
   echo "  done."

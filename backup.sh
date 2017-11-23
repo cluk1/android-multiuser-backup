@@ -13,7 +13,7 @@ fi
 
 
 base="$devdatadir"
-mkdir -p $base
+mkdir -p $base/{apks,data}
 
 cd /data
 pkgs="$*"
@@ -24,18 +24,19 @@ if [ "$pkg" = "all" ]; then
 fi
 
 echo "Creating backup for uid $uid.."
+mkdir -p $base/data/$uid
 for pkg in $pkgs; do
   [ -f /data/app/$pkg-*/base.apk ] && (
     echo "  Backing up pkg $pkg.."
-    cp /data/app/$pkg-*/base.apk $base/$pkg.apk
+    cp /data/app/$pkg-*/base.apk $base/apks/$pkg.apk
     [ -d "user/$uid/$pkg" ] && (
       echo "    Backing up userdata.."
-      tar c -C user/$uid -f $base/$uid-$pkg-user.tar $pkg
+      tar c -C user/$uid -f $base/data/$uid/$pkg-user.tar $pkg
       echo "    done."
     )
     [ -d "media/$uid/Android/data/$pkg" ] && (
       echo "    Backing up media.."
-      tar c -C media/$uid/Android/data -f $base/$uid-$pkg-media.tar $pkg
+      tar c -C media/$uid/Android/data -f $base/data/$uid/$pkg-media.tar $pkg
       echo "    done."
     )
     echo "  done."
