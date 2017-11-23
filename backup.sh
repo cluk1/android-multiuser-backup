@@ -16,22 +16,30 @@ base="$devdatadir"
 mkdir -p $base
 
 cd /data
+pkgs="$*"
+
+# Backup all installed packages?
+if [ "$pkg" = "all" ]; then
+  pkgs="$(pm list packages | cut -f2 -d':')"
+fi
 
 echo "Creating backup for uid $uid.."
-for pkg in $*; do
-  echo "  Backing up pkg $pkg.."
-  cp /data/app/$pkg-*/base.apk $base/$pkg.apk
-  [ -d "user/$uid/$pkg" ] && (
-    echo "    Backing up userdata.."
-    tar c -C user/$uid -f $base/$uid-$pkg-user.tar $pkg
-    echo "    done."
+for pkg in $pkgs; do
+  [ -f /data/app/$pkg-*/base.apk ] && (
+    echo "  Backing up pkg $pkg.."
+    cp /data/app/$pkg-*/base.apk $base/$pkg.apk
+    [ -d "user/$uid/$pkg" ] && (
+      echo "    Backing up userdata.."
+      tar c -C user/$uid -f $base/$uid-$pkg-user.tar $pkg
+      echo "    done."
+    )
+    [ -d "media/$uid/Android/data/$pkg" ] && (
+      echo "    Backing up media.."
+      tar c -C media/$uid/Android/data -f $base/$uid-$pkg-media.tar $pkg
+      echo "    done."
+    )
+    echo "  done."
   )
-  [ -d "media/$uid/Android/data/$pkg" ] && (
-    echo "    Backing up media.."
-    tar c -C media/$uid/Android/data -f $base/$uid-$pkg-media.tar $pkg
-    echo "    done."
-  )
-  echo "  done."
 done
 echo "done."
 
