@@ -5,6 +5,7 @@
 set -e
 
 rm -rf $localdatadir;
+adb shell su -c \'rm -rf $devdatadir\'
 adb push $(dirname $0)/backup.sh $devtmpdir/
 adb push $(dirname $0)/config $devtmpdir/
 adb shell su -c \'sh $devtmpdir/backup.sh $*\'
