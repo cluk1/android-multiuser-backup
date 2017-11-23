@@ -15,9 +15,18 @@ fi
 base="$devdatadir"
 
 cd /data
+pkgs="$*"
+
+# Backup all installed packages?
+if [ "$pkg" = "all" ]; then
+  pkgfiles="$(cd $devdatadir; ls *.apk)"
+  for file in $pkgfiles; do
+    pkgs="$pkgs ${file%\.apk}"
+  done
+fi
 
 echo "Restoring backup for uid $uid.."
-for pkg in $*; do
+for pkg in $pkgs; do
   [ -z "$pkg" ] && ( echo "Missing pkg"; exit 1)
   echo "  Restoring pkg $pkg.."
   [ -f "$base/$pkg.apk" ] && (
@@ -58,4 +67,3 @@ for pkg in $*; do
   echo "  done."
 done
 echo "done."
-
