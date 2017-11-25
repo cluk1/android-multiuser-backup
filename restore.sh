@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 . $(dirname $0)/config
 
 uid=$1
@@ -16,6 +18,7 @@ base="$devdatadir"
 
 cd /data
 pkgs="$*"
+uids=$uid
 
 # Backup all installed packages?
 if [ "$pkg" = "all" ]; then
@@ -25,45 +28,57 @@ if [ "$pkg" = "all" ]; then
   done
 fi
 
-echo "Restoring backup for uid $uid.."
-for pkg in $pkgs; do
-  [ -z "$pkg" ] && ( echo "Missing pkg"; exit 1)
-  echo "  Restoring pkg $pkg.."
-  [ -f "$base/apks/$pkg.apk" ] && (
-    echo "    Installing pkg.."
-    if [ -z "$(pm list package $pkg)" ]; then
-      pm install $base/apks/$pkg.apk
-      for user in $(cd /data/user; ls | grep '^[0-9]*$' | grep -v $uid); do
-        pm disable --user $user $pkg
-      done
-    else
-      pm enable --user $uid $pkg
+if [ "$uid" = "all" ]; then
+  uids="$(cd $devdatadir/data; ls)"
+fi
+
+for uid in $uids; do
+  echo "Restoring backup for uid $uid.."
+  for pkg in $pkgs; do
+    [ -z "$pkg" ] && ( echo "Missing pkg"; exit 1)
+    echo "  Restoring pkg $pkg.."
+    if [ -f "$base/apks/$pkg.apk" ]; then
+      if [ -z "$(pm list package $pkg)" ]; then
+        echo "    Installing pkg.."
+        pm install $base/apks/$pkg.apk >/dev/null
+        echo "    done."
+      else
+        echo "    pkg already installed.."
+      fi
+      if [ -f "$base/data/$uid/$pkg.disabled" ]; then
+        echo "    Disabling pkg.."
+        pm disable --user $uid $pkg >/dev/null
+        echo "    done."
+      else
+        echo "    Enabling pkg.."
+        pm enable --user $uid $pkg >/dev/null
+        echo "    done."
+      fi
     fi
-    echo "    done."
-  )
-  [ -f "$base/data/$uid/$pkg-user.tar" ] && (
-    echo "    Getting uid/gid and secontext.."
-    secontext=$(ls -dZ user/$uid/$pkg | cut -f1 -d' ')
-    user=$(ls -dl user/$uid/$pkg | cut -f3 -d' ')
-    group=$(ls -dl user/$uid/$pkg | cut -f4 -d' ')
-    echo "    done."
-    echo "    Restoring userdata.."
-    rm -rf user/$uid/$pkg
-    tar x -C user/$uid -f $base/data/$uid/$pkg-user.tar $pkg
-    echo "    done."
-    echo "    Restoring ownership.."
-    chown -R $user:$group user/$uid/$pkg
-    echo "    done."
-    echo "    Restoring secontext.."
-    find user/$uid/$pkg -exec chcon $secontext {} \;
-    echo "    done."
-  )
-  [ -f "$base/data/$uid/$pkg-media.tar" ] && (
-    echo "    Restoring media.."
-    rm -rf media/$uid/Android/data/$pkg
-    tar x -C media/$uid/Android/data -f $base/data/$uid/$pkg-media.tar $pkg
-    echo "    done."
-  )
-  echo "  done."
+    if [ -f "$base/data/$uid/$pkg-user.tar" ]; then
+      echo "    Getting uid/gid and secontext.."
+      secontext=$(ls -dZ user/$uid/$pkg | cut -f1 -d' ')
+      user=$(ls -dl user/$uid/$pkg | cut -f3 -d' ')
+      group=$(ls -dl user/$uid/$pkg | cut -f4 -d' ')
+      echo "    done."
+      echo "    Restoring userdata.."
+      rm -rf user/$uid/$pkg
+      tar x -C user/$uid -f $base/data/$uid/$pkg-user.tar $pkg
+      echo "    done."
+      echo "    Restoring ownership.."
+      chown -R $user:$group user/$uid/$pkg
+      echo "    done."
+      echo "    Restoring secontext.."
+      find user/$uid/$pkg -exec chcon $secontext {} \;
+      echo "    done."
+    fi
+    if [ -f "$base/data/$uid/$pkg-media.tar" ]; then
+      echo "    Restoring media.."
+      rm -rf media/$uid/Android/data/$pkg
+      tar x -C media/$uid/Android/data -f $base/data/$uid/$pkg-media.tar $pkg
+      echo "    done."
+    fi
+    echo "  done."
+  done
+  echo "done."
 done
-echo "done."

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 . $(dirname $0)/config
 
 uid=$1
@@ -17,31 +19,51 @@ mkdir -p $base/{apks,data}
 
 cd /data
 pkgs="$*"
+uids="$uid"
+alluids=0
 
 # Backup all installed packages?
 if [ "$pkg" = "all" ]; then
   pkgs="$(pm list packages | cut -f2 -d':')"
 fi
 
-echo "Creating backup for uid $uid.."
-mkdir -p $base/data/$uid
-for pkg in $pkgs; do
-  [ -f /data/app/$pkg-*/base.apk ] && (
-    echo "  Backing up pkg $pkg.."
-    cp /data/app/$pkg-*/base.apk $base/apks/$pkg.apk
-    [ -d "user/$uid/$pkg" ] && (
-      echo "    Backing up userdata.."
-      tar c -C user/$uid -f $base/data/$uid/$pkg-user.tar $pkg
-      echo "    done."
-    )
-    [ -d "media/$uid/Android/data/$pkg" ] && (
-      echo "    Backing up media.."
-      tar c -C media/$uid/Android/data -f $base/data/$uid/$pkg-media.tar $pkg
-      echo "    done."
-    )
-    echo "  done."
-  )
-done
-echo "done."
+if [ "$uid" = "all" ]; then
+  alluids=1
+  uids="$(pm list users | grep 'UserInfo' | cut -f1 -d':' | cut -f2 -d'{')"
+fi
 
-ls -lah $base
+for uid in $uids; do
+  echo "Creating backup for uid $uid.."
+  mkdir -p $base/data/$uid
+  for pkg in $pkgs; do
+    if [ -f /data/app/$pkg-*/base.apk ]; then
+      echo "  Backing up pkg $pkg.."
+      if [ ! -f "$base/apks/$pkg.apk" ]; then
+        echo "    Backing up apk.."
+        cp /data/app/$pkg-*/base.apk $base/apks/$pkg.apk
+        echo "    done."
+      else
+        echo "    apk already backed up."
+      fi
+      if [ ! -z "$(pm list package -e --user $uid $pkg)" ]; then
+        if [ -d "user/$uid/$pkg" ]; then
+          echo "    Backing up userdata.."
+          tar c -C user/$uid -f $base/data/$uid/$pkg-user.tar $pkg
+          echo "    done."
+        fi
+        if [ -d "media/$uid/Android/data/$pkg" ]; then
+          echo "    Backing up media.."
+          tar c -C media/$uid/Android/data -f $base/data/$uid/$pkg-media.tar $pkg
+          echo "    done."
+        fi
+      else
+        echo "    pkg $pkg is not enabled for user $uid"
+        touch $base/data/$uid/$pkg.disabled
+      fi
+      echo "  done."
+    fi
+  done
+  echo "done."
+done
+
+find $base
