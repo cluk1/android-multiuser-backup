@@ -31,6 +31,17 @@ eg:
 ```bash
   adb-backup.sh 12 org.mozilla.firefox com.foo.bar
 ```
+### backup all user and/or all apps
+Both parameters uid / pkg allow for the special token 'all'. This will either
+backup the data for all users or for all apps (from one user).
+eg backup all user's firefox data:
+```bash
+  adb-backup.sh all org.mozilla.firefox
+```
+eg backup all apps from all users:
+```bash
+  adb-backup.sh all all
+```
 ## Restore
 ```bash
   adb-restore.sh <uid> <pkg1> [<pkg2> <pkg3> ..]
@@ -39,4 +50,17 @@ eg:
 eg:
 ```bash
   adb-restore.sh 12 org.mozilla.firefox com.foo.bar
+```
+### restore all users and/or all apps
+Both parameters uid / pkg allow for the special token 'all'. This will either
+restore the data for all users or for all apps (from one user).
+If you try to restore 'all' apps the data from all apps which have been backed up
+before is restored.
+eg restore all user's firefox data:
+```bash
+  adb-restore.sh all org.mozilla.firefox
+```
+eg restore all apps from all users:
+```bash
+  adb-restore.sh all all
 ```
