@@ -64,6 +64,16 @@ for uid in $uids; do
     fi
   done
   echo "done."
+  if [ -f "/data/system/users/$uid/accounts.db" ]; then
+    echo "Creating backup of accounts.db .."
+    cp /data/system/users/$uid/accounts.db $base/data/$uid/
+    echo "done."
+  fi
 done
+if [ -f "/data/system/sync/accounts.xml" ]; then
+  echo "Creating backup of accounts.xml .."
+  cp /data/system/sync/accounts.xml $base/data/
+  echo "done."
+fi
 
 find $base
