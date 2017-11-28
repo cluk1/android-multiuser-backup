@@ -23,13 +23,14 @@ uids=$uid
 # Backup all installed packages?
 if [ "$pkg" = "all" ]; then
   pkgfiles="$(cd $devdatadir/apks; ls *.apk)"
+  pkgs=""
   for file in $pkgfiles; do
     pkgs="$pkgs ${file%\.apk}"
   done
 fi
 
 if [ "$uid" = "all" ]; then
-  uids="$(cd $devdatadir/data; ls)"
+  uids="$(cd $devdatadir/data; ls | grep '^[0-9]*$')"
 fi
 
 for uid in $uids; do
