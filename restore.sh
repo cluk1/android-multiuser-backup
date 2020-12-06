@@ -37,6 +37,11 @@ for uid in $uids; do
   echo "Restoring backup for uid $uid.."
   for pkg in $pkgs; do
     [ -z "$pkg" ] && ( echo "Missing pkg"; exit 1)
+    # Testing if for this user, data existed, or if app was installed but disabled.
+    if ( [ ! -f "$base/data/$uid/$pkg-user.tar" ] ) && ( [ ! -f "$base/data/$uid/$pkg.disabled" ] ) ; then
+      # The app didn't exist for the user (neither in enabled nor disabled form). Stop the current iteration and proceed to the next pkg.
+      continue 1
+    fi
     echo "  Restoring pkg $pkg.."
     if [ -f "$base/apks/$pkg.apk" ]; then
       if [ -z "$(pm list package $pkg)" ]; then
