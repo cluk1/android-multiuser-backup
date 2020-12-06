@@ -65,15 +65,27 @@ for uid in $uids; do
     fi
   done
   echo "done."
+  # This is for old Android.
   if [ -f "/data/system/users/$uid/accounts.db" ]; then
     echo "Creating backup of accounts.db .."
-    cp /data/system/users/$uid/accounts.db $base/data/$uid/
+    tar -cf "$base/data/$uid/accounts.db.tar" "/data/system/users/$uid/accounts.db"
+    echo "done."
+  fi
+  # Newer Android (like Android 9).
+  if [ -f "/data/system_ce/$uid/accounts_ce.db" ]; then
+    echo "Creating backup of accounts_ce.db .."
+    tar -cf "$base/data/$uid/accounts_ce.db.tar" "/data/system_ce/$uid/accounts_ce.db"
+    echo "done."
+  fi
+  if [ -f "/data/system_de/$uid/accounts_de.db" ]; then
+    echo "Creating backup of accounts_de.db .."
+    tar -cf "$base/data/$uid/accounts_de.db.tar" "/data/system_de/$uid/accounts_de.db"
     echo "done."
   fi
 done
 if [ -f "/data/system/sync/accounts.xml" ]; then
-  echo "Creating backup of accounts.xml .."
-  cp /data/system/sync/accounts.xml $base/data/
+  echo "Creating backup of accounts.xml ..."
+  tar -cf "$base/data/accounts.xml.tar" "/data/system/sync/accounts.xml"
   echo "done."
 fi
 
