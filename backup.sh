@@ -6,9 +6,9 @@ set -e
 
 uid=$1
 shift
-pkg=$1
+pkgarg=$1
 
-if [ -z "$uid" -o -z "$pkg" ]; then
+if [ -z "$uid" -o -z "$pkgarg" ]; then
   echo "Usage $0 <uid> <pkg>"
   exit 0
 fi
@@ -22,11 +22,6 @@ pkgs="$*"
 uids="$uid"
 alluids=0
 
-# Backup all installed packages?
-if [ "$pkg" = "all" ]; then
-  pkgs="$(pm list packages | cut -f2 -d':')"
-fi
-
 if [ "$uid" = "all" ]; then
   alluids=1
   uids="$(pm list users | grep 'UserInfo' | cut -f1 -d':' | cut -f2 -d'{')"
@@ -35,6 +30,12 @@ fi
 for uid in $uids; do
   echo "Creating backup for uid $uid.."
   mkdir -p $base/data/$uid
+  
+  # Backup all installed packages?
+  if [ "$pkgarg" = "all" ]; then
+    pkgs="$(pm list packages --user "$uid" | cut -f2 -d':')"
+  fi
+
   for pkg in $pkgs; do
     if [ -f /data/app/$pkg-*/base.apk ]; then
       echo "  Backing up pkg $pkg.."
